@@ -28,86 +28,95 @@ class JavaFXBrowser : JFrame() {
     private val txtURL = JTextField()
     private val progressBar = JProgressBar()
 
+    private var view : WebView? = null;
+
     init {
         initComponents()
+        handleEvents()
+        pack()
     }
 
     private fun initComponents() {
-        createScene()
+        
+        Platform.runLater {
+            view = WebView() // has to be initialized in JavaFX thread
+            jfxPanel.scene = Scene(view)
+        }
 
-        progressBar.setPreferredSize(Dimension(150, 18))
-        progressBar.setStringPainted(true)
-
+        with(progressBar) {
+            preferredSize = Dimension(150, 18)
+            isStringPainted = true
+        }
+        
         val topBar = JPanel(BorderLayout(5, 0))
-        topBar.border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
-        topBar.add(txtURL, BorderLayout.CENTER)
-        topBar.add(btnGo, BorderLayout.EAST)
-
         val statusBar = JPanel(BorderLayout(5, 0))
-        statusBar.border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
-        statusBar.add(lblStatus, BorderLayout.CENTER)
-        statusBar.add(progressBar, BorderLayout.EAST)
 
-        panel.add(topBar, BorderLayout.NORTH)
-        panel.add(jfxPanel, BorderLayout.CENTER)
-        panel.add(statusBar, BorderLayout.SOUTH)
+        with(topBar) {
+            border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
+            add(txtURL, BorderLayout.CENTER)
+            add(btnGo, BorderLayout.EAST)
+        }
+
+        with(statusBar) {
+            border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
+            add(lblStatus, BorderLayout.CENTER)
+            add(progressBar, BorderLayout.EAST)
+        }
+
+        with(panel) {
+            add(topBar, BorderLayout.NORTH)
+            add(jfxPanel, BorderLayout.CENTER)
+            add(statusBar, BorderLayout.SOUTH)
+        }
 
         contentPane.add(panel)
 
         preferredSize = Dimension(1024, 600)
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        pack()
+
     }
-
-
-    var _engine : WebEngine? = null;
 
     fun loadURL(url: String) {
         Platform.runLater {
             Try.of { URL(url).toExternalForm() }
                     .recover { log.info{ "fallback loading of $url " } ;  URL("http://" + it).toExternalForm() }
-                    .map { _engine!!.load(it) }
-
-
+                    .map { view!!.engine.load(it) }
         }
     }
 
-    private fun createScene() {
+    private fun handleEvents() {
 
         Platform.runLater {
 
-            val view = WebView()
-            val engine = view.getEngine()
-            _engine = engine;
+            btnGo.addActionListener { loadURL(txtURL.text) }
+            txtURL.addActionListener { loadURL(txtURL.text) }
 
-            btnGo.addActionListener{ loadURL(txtURL.getText()) }
-            txtURL.addActionListener { loadURL(txtURL.getText()) }
+            with(view!!.engine) {
+                
+                titleProperty().addListener { _, _, newValue ->
+                    SwingUtilities.invokeLater { this@JavaFXBrowser.title = newValue }
+                }
 
+                setOnStatusChanged { event ->
+                    SwingUtilities.invokeLater { lblStatus.text = event.data }
+                }
 
-            engine.titleProperty().addListener { _, _, newValue ->
-                SwingUtilities.invokeLater { this@JavaFXBrowser.title = newValue }
+                locationProperty().addListener { _, _, newValue ->
+                    SwingUtilities.invokeLater { txtURL.text = newValue }
+                }
+
+                loadWorker.workDoneProperty().addListener { _, _, newValue ->
+                    SwingUtilities.invokeLater { progressBar.value = newValue.toInt() }
+                }
+
+                loadWorker
+                        .exceptionProperty()
+                        .addListener { _, _, value ->
+                            log.info { "${location}: ${value?.message}" }
+                        }
             }
-
-            engine.setOnStatusChanged { event ->
-                SwingUtilities.invokeLater { lblStatus.text = event.data }
-            }
-
-            engine.locationProperty().addListener { _, _, newValue ->
-                SwingUtilities.invokeLater { txtURL.text = newValue }
-            }
-
-            engine.loadWorker.workDoneProperty().addListener { _, _, newValue ->
-                SwingUtilities.invokeLater { progressBar.value = newValue.toInt() }
-            }
-
-            engine.loadWorker
-                    .exceptionProperty()
-                    .addListener { _, _, value ->
-                            log.info { "${engine.location}: ${value?.message}" }
-                    }
-
-            jfxPanel.setScene(Scene(view))
         }
+
     }
 
 
