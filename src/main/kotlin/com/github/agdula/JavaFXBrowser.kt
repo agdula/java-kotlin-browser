@@ -39,12 +39,12 @@ class JavaFXBrowser : JFrame() {
         progressBar.setStringPainted(true)
 
         val topBar = JPanel(BorderLayout(5, 0))
-        topBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5))
+        topBar.border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
         topBar.add(txtURL, BorderLayout.CENTER)
         topBar.add(btnGo, BorderLayout.EAST)
 
         val statusBar = JPanel(BorderLayout(5, 0))
-        statusBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5))
+        statusBar.border = BorderFactory.createEmptyBorder(3, 5, 3, 5)
         statusBar.add(lblStatus, BorderLayout.CENTER)
         statusBar.add(progressBar, BorderLayout.EAST)
 
@@ -52,10 +52,10 @@ class JavaFXBrowser : JFrame() {
         panel.add(jfxPanel, BorderLayout.CENTER)
         panel.add(statusBar, BorderLayout.SOUTH)
 
-        getContentPane().add(panel)
+        contentPane.add(panel)
 
-        setPreferredSize(Dimension(1024, 600))
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+        preferredSize = Dimension(1024, 600)
+        defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         pack()
     }
 
