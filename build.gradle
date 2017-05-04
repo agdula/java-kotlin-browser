@@ -1,0 +1,36 @@
+group 'SwingBrowser'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.1.1'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile group: 'io.javaslang', name: 'javaslang', version: '2.0.6'
+
+    // Logging 
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+    compile group: 'uk.org.lidalia', name: 'sysout-over-slf4j', version: '1.0.2'
+    compile 'io.github.microutils:kotlin-logging:1.4.4'
+    // Loggin END
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
