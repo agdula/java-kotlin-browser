@@ -1,2 +1,3 @@
 rootProject.name = 'swing-browser'
+include 'local-http-srv'
 
